@@ -3,7 +3,7 @@
 > A simple Hacker News implementation using Polymer 1.0 based on Polymer Starter Kit
 
 ### Demo
-Demo can be found here: 
+Demo can be found here: [https://hn-polymer.firebaseapp.com/](https://hn-polymer.firebaseapp.com/)
 
 ### Hacker News API
 More details about Hacker News API can be found here: [https://github.com/HackerNews/API](https://github.com/HackerNews/API) 
