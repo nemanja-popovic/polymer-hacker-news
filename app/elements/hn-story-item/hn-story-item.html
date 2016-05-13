@@ -1,0 +1,172 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/firebase-element/firebase-document.html">
+
+<dom-module id="hn-story-item">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .story-line{
+        padding: 10px;
+      }
+      
+      .story-line a{
+        text-decoration: none;
+        color: #000;
+      }
+      
+      .story-line a:hover{
+        text-decoration: underline;
+      }
+      
+      .story-line a:visited{
+        text-decoration: none;
+        color: #666;
+      }
+      
+      .story-line .title{
+          font-size: 18px;
+      }
+      
+      .story-line .author{
+        font-weight: 800;
+      }
+
+      .summary {
+        padding: 2px;
+        font-size: 12px;
+      }
+    </style>
+      
+    <template is="dom-if" if="[[!story.url]]">
+      <div class="story-line">
+        
+        <span class="index">[[index]].</span>
+        <a  data-route="story" href="[[baseUrl]]story/[[storyId]]">
+          <span class="title">[[story.title]]</span>
+        </a>
+        <!--<p class="text">[[story.text]]</p>-->
+        <div class="summary">
+          <span class="score">[[story.score]] points by </span>
+          <span class="author">
+            <a href="[[baseUrl]]users/[[story.by]]">
+              [[story.by]]
+            </a>
+          </span>
+          <span class="time"> 
+            <time-ago date="[[story.time]]"></time-ago> ago | 
+          </span>
+          <span class="comments">
+            <a href="[[baseUrl]]story/[[story.id]]">
+              [[story.descendants]] comments
+            </a>  
+          </span>
+        </div>
+      </div>
+    </template>
+
+  <template is="dom-if" if="[[story.url]]">
+      <div class="story-line">
+        
+        <span class="index">[[index]].</span>
+        <a href="[[story.url]]" target="_blank">
+          <span class="title">[[story.title]]</span>
+          <span class="story-host">
+            <a href="[[story.url]]" target="_blank">([[_getHost(story.url)]])</a>
+          </span>
+        </a>
+          <div class="summary">
+            <span class="score">[[story.score]] points by </span>
+            <span class="author">
+              <a href="[[baseUrl]]users/[[story.by]]">
+                [[story.by]]
+              </a>
+            </span>
+            <span class="time"> 
+              <time-ago date="[[story.time]]"></time-ago> ago | 
+            </span>
+            
+            <span class="comments">
+              <a href="[[baseUrl]]story/[[story.id]]">
+                [[story.descendants]] comments
+              </a>  
+            </span>
+          </div>
+      </div>
+    </template>
+
+  <firebase-document id="firebaseElement" location="[[url]]" data="{{story}}"></firebase-document>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      
+      var storyObjectDefined = false;
+      
+      Polymer({
+        is: 'hn-story-item',
+
+        properties: {
+            storyId: {
+                type: String,
+                observer: '_storyIdChanged'
+            },
+            story: {
+                type: Object,
+                observer: '_storyChanged'
+            },
+            index: {
+                type: Number
+            }
+        },
+        
+        _storyIdChanged: function(){
+            var self = this;
+          
+            self._setFirebaseUrl(self.storyId);
+        },
+        
+        _storyChanged: function(newStory){
+            // TODO: Animate changed properties in UI
+        },
+        
+        _setFirebaseUrl: function(storyId){
+            var self = this;
+            
+            self.url = 'https://hacker-news.firebaseio.com/v0/item/' + storyId;
+        },
+        _getStoryUrl: function(url){
+            console.log(url)
+            return url;
+        },
+        
+        _getHost: function(href) {
+            var l = document.createElement("a");
+            l.href = href;
+            return l.host;
+        },
+        
+        attached: function(){
+            var self = this;
+            
+            self._setFirebaseUrl(self.storyId);
+        }
+      });
+    })();
+  </script>
+</dom-module>

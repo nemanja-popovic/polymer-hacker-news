@@ -1,0 +1,142 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/firebase-element/firebase-document.html">
+
+<dom-module id="hn-story-comment">
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin-bottom: 10px;
+      }
+      #expandBtn{
+        cursor: pointer; 
+      }
+      .comment-summary{
+          color: #666;
+          margin-bottom: .5em;
+      }
+      .comment-summary a{
+        text-decoration: none;
+        cursor: pointer;
+        color: #666;
+      }
+      .comment-summary a:hover{
+        text-decoration: underline;
+      }
+      .author{
+          font-weight: bold;
+          color: #666;
+      }
+    </style>
+    
+    <div id="comment">
+      
+      <div class="comment-summary">
+        <span id="expandBtn" on-tap="_toogleVisibility">[-]</span>
+        
+        <span class="author">
+          <a href="[[baseUrl]]users/[[comment.by]]">
+            [[comment.by]]
+          </a>
+        </span>
+        <span class="time"> 
+          <time-ago date="[[comment.time]]"></time-ago> ago | 
+        </span>
+        <a  href="[[baseUrl]]comment/[[comment.by]]">link</a>
+      </div>
+      
+      <div id="commentContent">
+        <div id="commentText"></div>
+        
+        <template is="dom-repeat" items="{{comment.kids}}">
+            <hn-story-comment comment-id="{{item}}" level="[[nextLevel]]">
+            </hn-story-comment>
+        </template>
+      </div>
+  </div>
+
+  <firebase-document location="[[url]]" data="{{comment}}"></firebase-document>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'hn-story-comment',
+
+        properties: {
+          commentId: {
+            type: String,
+            observer: '_commentIdChanged'
+          },
+          comment: {
+            type: Object,
+            observer: '_commentChanged'
+          },
+          level: {
+            type: Number,
+            value: 0
+          },
+          expanded:{
+            type: Boolean,
+            value: true
+          }
+        },
+        
+        _toogleVisibility: function(){
+          var self = this;
+          self.expanded = !self.expanded;
+          if(self.expanded){
+            self.$.expandBtn.innerHTML = '[-]';
+            self.$.commentContent.hidden = false;
+          }
+          else{
+            self.$.expandBtn.innerHTML = '[+]';
+            self.$.commentContent.hidden = true;
+          }
+        },
+        
+        _commentChanged:function(comment){
+          var self = this;
+          if(!comment || !comment.text){
+            return;
+          }
+          self.$.commentText.innerHTML = comment.text;
+        },
+          
+        _setFirebaseUrl: function(commentId){
+          var self = this;
+          
+          self.url = 'https://hacker-news.firebaseio.com/v0/item/' + commentId;
+        },
+        
+        _commentIdChanged: function(commentId){ 
+          var self = this;
+          
+          self._setFirebaseUrl(commentId);
+        },
+        
+        attached: function(){
+          var self = this;
+          
+          self.$.comment.style.marginLeft = (self.level * 2.7) + 'em';
+          self.nextLevel = self.level + 1;
+          self._setFirebaseUrl(self.commentId);
+        }
+      });
+    })();
+  </script>
+</dom-module>
